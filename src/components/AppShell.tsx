@@ -51,8 +51,8 @@ function BarraInferior() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const itens = [
     { to: "/", rotulo: "Vitrine", icone: "⌂" },
-    { to: "/categoria/$slug", params: { slug: "roupas" }, rotulo: "Categorias", icone: "▤" },
     { to: "/buscar", rotulo: "Buscar", icone: "⌕" },
+    { to: "/publicar", rotulo: "Publicar", icone: "＋" },
     { to: "/pagamento", rotulo: "Pix", icone: "◈" },
   ] as const;
 
