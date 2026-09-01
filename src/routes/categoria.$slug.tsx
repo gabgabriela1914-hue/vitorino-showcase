@@ -1,53 +1,58 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { ProductCard } from "@/components/ProductCard";
 import { nomeCategoria, type CategoriaSlug } from "@/lib/catalog";
-import { produtosQueryOptions } from "@/lib/produtos";
+import { useVitrine } from "@/lib/vitrine";
 
 export const Route = createFileRoute("/categoria/$slug")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(produtosQueryOptions),
-  head: ({ params }) => {
-    const nome = nomeCategoria(params.slug as CategoriaSlug);
-    return {
-      meta: [
-        { title: `${nome} — Vitorino Vitrines` },
-        { name: "description", content: `${nome} selecionados com pagamento direto no Pix.` },
-        { property: "og:title", content: `${nome} — Vitorino Vitrines` },
-        { property: "og:description", content: `${nome} selecionados com pagamento direto no Pix.` },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-    };
-  },
-  component: Categoria,
+  ssr: false,
+  head: ({ params }) => ({
+    meta: [
+      { title: `${nomeCategoria(params.slug as CategoriaSlug)} — Vitorino Vitrines` },
+      {
+        name: "description",
+        content: `Produtos publicados na categoria ${nomeCategoria(params.slug as CategoriaSlug)}.`,
+      },
+      { property: "og:title", content: `${nomeCategoria(params.slug as CategoriaSlug)} — Vitorino Vitrines` },
+      {
+        property: "og:description",
+        content: `Produtos publicados na categoria ${nomeCategoria(params.slug as CategoriaSlug)}.`,
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: CategoriaPagina,
 });
 
-function Categoria() {
+function CategoriaPagina() {
   const { slug } = Route.useParams();
-  const { data: produtos } = useSuspenseQuery(produtosQueryOptions);
-  const filtrados = produtos.filter((p) => p.categoria === slug);
+  const { produtos, carregando } = useVitrine();
+  const lista = produtos.filter((p) => p.categoria === slug);
 
   return (
     <AppShell>
-      <header className="mb-4">
-        <p className="text-[11px] font-semibold tracking-[0.22em] text-primary uppercase">
-          Categoria
-        </p>
-        <h1 className="font-display text-3xl font-semibold">
-          {nomeCategoria(slug as CategoriaSlug)}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{filtrados.length} produtos</p>
-      </header>
+      <h1 className="font-display text-2xl font-semibold">
+        {nomeCategoria(slug as CategoriaSlug)}
+      </h1>
+      <p className="mt-1 text-sm text-muted-foreground">{lista.length} publicados</p>
 
-      {filtrados.length === 0 ? (
-        <p className="rounded-2xl bg-card p-6 text-center text-sm text-muted-foreground shadow-card">
-          Nenhum produto nesta categoria ainda. Volte em breve!
-        </p>
+      {carregando ? (
+        <p className="mt-6 text-sm text-muted-foreground">Carregando…</p>
+      ) : lista.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-8 text-center">
+          <p className="text-sm text-muted-foreground">Nada publicado nesta categoria ainda.</p>
+          <Link
+            to="/publicar"
+            className="mt-4 inline-flex rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
+          >
+            Publicar produto
+          </Link>
+        </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {filtrados.map((produto) => (
-            <ProductCard key={produto.id} produto={produto} />
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {lista.map((p) => (
+            <ProductCard key={p.id} produto={p} />
           ))}
         </div>
       )}
