@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CategoriaSlug, Midia, Produto } from "./catalog";
+import { BUCKET, temSupabase } from "./supabase-config";
+import { getSupabase } from "./supabase";
 
 /**
  * Vitrine da usuária: nada é pré-cadastrado.
