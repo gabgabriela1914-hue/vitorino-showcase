@@ -71,7 +71,7 @@ async function publicarNaNuvem(dados: Omit<PublicacaoGravada, "id" | "criadoEm">
     const ext = (m.blob.type.split("/")[1] ?? "bin").replace(/[^a-z0-9]/gi, "");
     const caminho = `${id}/${i}.${ext}`;
     const { error } = await sb.storage.from(BUCKET).upload(caminho, m.blob, {
-      contentType: m.blob.type || undefined,
+      contentType: m.blob.type || "application/octet-stream",
       upsert: true,
     });
     if (error) throw error;
